@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/foxfake/Code/LR1Praser/build",
+  "command": "/usr/bin/g++   -g -o CMakeFiles/Complier.dir/main.cpp.o -c /home/foxfake/Code/LR1Praser/src/main.cpp",
+  "file": "/home/foxfake/Code/LR1Praser/src/main.cpp"
+}
+]
