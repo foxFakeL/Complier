@@ -57,7 +57,7 @@ vector<Production> getProductions(string fileName) {
             productions.push_back(p);
         } else if (regex_search(line, sm, e3)) {
             string attr = sm[1];
-            productions.back().attr = attr;
+            productions.back().attr.emplace_back(attr);
         }
     }
     prod_file.close();

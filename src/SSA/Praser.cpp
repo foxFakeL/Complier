@@ -20,7 +20,12 @@ bool Item::operator<(const Item& item) const {
     }
 }
 
-Praser::Praser(const vector<Token>& tokens, string filename) {
+bool Item::operator==(const Item& item) const {
+    return prod_id == item.prod_id && dot_pos == item.dot_pos &&
+           lookahead == item.lookahead;
+}
+
+Praser::Praser(const vector<Token>& tokens, string filename, Semer& semer) {
     this->tokens = tokens;
     this->productions = getProductions(filename);
     for (auto i : productions) {
@@ -37,6 +42,93 @@ Praser::Praser(const vector<Token>& tokens, string filename) {
     }
 
     build_first();
+
+    cout << 1 << endl;
+
+    build_collection();
+
+    cout << 2 << endl;
+
+    build_action();
+
+    cout << 3 << endl;
+
+    build_goto();
+
+    cout << "First集: " << endl;
+    print_first();
+    cout << endl;
+
+    stack<int> st;        // 状态栈
+    stack<AST_NODE*> nt;  // 语法树节点栈
+    st.push(0);
+    for (size_t i = 0; i < tokens.size();) {
+        auto* token = &tokens[i];
+        string inputs;
+        if (token->type == "ID")
+            inputs = "ID";
+        else if (token->type == "INT" || token->type == "FLOAT" || token->type == "E_NUM" || token->type == "I_NUMF")
+            inputs = "NUM";
+        else
+            inputs = token->content;
+
+        int op = ACTION(st.top(), inputs);
+
+        if (STATE_STACK_OUT) {
+            cout << "INPUT: " << inputs << "\t";
+            cout << "STACK TOP: " << st.top() << "\t";
+        }
+
+        // 报错
+        if (op == ERROR) {
+            res = 0;
+            cout << "Syntax error at line: " << token->line << endl;
+            cout << "Incorrect syntax: " << token->content << endl
+                 << endl;
+            break;
+        }
+
+        // 接受
+        if (op == ACC) {
+            res = 1;
+            if (STATE_STACK_OUT)
+                cout << "accept" << endl;
+            break;
+        }
+
+        // 移入
+        if (op <= 0) {
+            AST_NODE* leaf = new AST_NODE();
+            leaf->val = token->content;
+            nt.push(leaf);
+
+            st.push(-op);
+            ++i;
+
+            if (STATE_STACK_OUT)
+                cout << "shift " << -op << endl;
+        }
+
+        // 规约
+        if (op > 0) {
+            // vector<string> pd = sdd.get_pd(op);
+            Production pd = productions[op];
+
+            // 将产生式体数量的状态弹出栈
+            for (size_t j = 1; j < pd.rhs.size(); j++) {
+                if (st.size() > 1 && pd.rhs[j] != "#")
+                    st.pop();
+            }
+            // 新状态压栈
+            st.push(GOTO(st.top(), pd.lhs));
+
+            AST_NODE* node = semer.execute(pd, pd.attr, nt);
+            nt.push(node);
+
+            if (STATE_STACK_OUT)
+                cout << "reduce " << op << " -> " << pd.lhs << endl;
+        }
+    }
 }
 
 // 获取一个串的First集
@@ -152,32 +244,24 @@ void Praser::build_collection() {
     while (flag) {
         flag = false;
         for (int i = 0; i < item_collection.size(); i++) {
-            for (auto j : terminals) {
-                auto t = get_goto(item_collection[i], j);
-                if (t.size() == 0) {
-                    continue;
-                }
-                flag = true;
-                auto it = find(item_collection.begin(), item_collection.end(), t);
-                if (it == item_collection.end()) {
-                    trans.insert({{i, j}, item_collection.size()});
-                    item_collection.emplace_back(t);
-                } else {
-                    trans.emplace(make_pair(i, j), it - item_collection.begin());
-                }
-            }
-            for (auto j : nonterminals) {
-                auto t = get_goto(item_collection[i], j);
-                if (t.size() == 0) {
-                    continue;
-                }
-                flag = true;
-                auto it = find(item_collection.begin(), item_collection.end(), t);
-                if (it == item_collection.end()) {
-                    trans.insert({{i, j}, item_collection.size()});
-                    item_collection.emplace_back(t);
-                } else {
-                    trans.emplace(make_pair(i, j), it - item_collection.begin());
+            set<string> symbols(
+                terminals.begin(), terminals.end());  // 终结符
+            symbols.insert(nonterminals.begin(),
+                           nonterminals.end());  // 非终结符
+            symbols.erase("#");
+            for (const auto& sym : symbols) {
+                set<Item> tmp = get_goto(item_collection[i], sym);
+
+                if (!tmp.empty()) {
+                    auto it = find(item_collection.begin(), item_collection.end(), tmp);
+
+                    if (it == item_collection.end()) {
+                        item_collection.emplace_back(tmp);
+                        flag = true;
+                        trans.insert({{i, sym}, item_collection.size() - 1});
+                    } else {
+                        trans.insert({{i, sym}, it - item_collection.begin()});
+                    }
                 }
             }
         }
@@ -200,9 +284,9 @@ void Praser::build_action() {
                 }
             } else if (nonterminals.find(p.rhs[item.dot_pos]) == nonterminals.end()) {  // 移入
                 string s = p.rhs[item.dot_pos];
-                pair<int, string> p(i, s);
-                if (trans.find(p) != trans.end()) {
-                    action[p] = -trans[p];
+                pair<int, string> pair(i, s);
+                if (trans.find(pair) != trans.end()) {
+                    action[pair] = -trans[pair];
                 }
             }
         }
@@ -216,5 +300,23 @@ void Praser::build_goto() {
         if (nonterminals.find(sym) != nonterminals.end()) {
             goto_[make_pair(i.first.first, sym)] = i.second;
         }
+    }
+}
+
+int Praser::GOTO(int state, string symbol) {
+    pair<int, string> p(state, symbol);
+    if (goto_.find(p) != goto_.end()) {
+        return goto_[p];
+    } else {
+        return ERROR;
+    }
+}
+
+int Praser::ACTION(int state, string symbol) {
+    pair<int, string> p(state, symbol);
+    if (action.find(p) != action.end()) {
+        return action[p];
+    } else {
+        return ERROR;
     }
 }

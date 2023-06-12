@@ -34,9 +34,22 @@ int main() {
         token.line = stoi(token_info[0]);
         token.type = token_info[1];
         token.content = token_info[2];
-        // cout << token << endl;
+        tokens.emplace_back(token);
+        cout << token << endl;
     }
-    Praser praser = Praser(tokens, "../assets/CFG.txt");
-    praser.print_first();
+    Semer semer;
+    Praser praser = Praser(tokens, "../assets/CFG.txt", semer);
+    AST* ast = semer.get_ast();
+    AST_NODE* root = ast->get_root();
+
+    cout << "AST:" << endl;
+
+    if (root != nullptr) {
+        ast->print(root);
+        cout << endl;
+        for (const auto& quad : root->code) {
+            quad->print(semer);
+        }
+    }
     return 0;
 }

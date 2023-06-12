@@ -1,6 +1,7 @@
 # 声明模块名称和源文件列表
 set(MODULE_NAME SSA)
-set(MODULE_SOURCES Production.cpp Production.h Praser.cpp Praser.h)
+set(MODULE_SOURCES Production.cpp Production.h Praser.cpp
+    Praser.h AST.h AST.cpp Semer.h Semer.cpp)
 
 include_directories(${CMAKE_SOURCE_DIR}/Lex)
 

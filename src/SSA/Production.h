@@ -13,7 +13,7 @@ public:
     Production(string lhs, vector<string> rhs);
     string lhs;
     vector<string> rhs;
-    string attr;
+    vector<string> attr;
     friend ostream& operator<<(ostream& os, const Production& p);
 
 private:
