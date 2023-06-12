@@ -1,0 +1,186 @@
+PROGRAM	-> BLOCK
+		{ PROGRAM0.code = BLCOK1.code }
+
+BLOCK	-> { STAB DECLS STMTS }
+		{ delstab() }
+		{ BLOCK0.nextlb = STMTS4.nextlb }
+		{ BLOCK0.code = DECLS3.code||STMTS4.code }
+
+
+// SYMBOL TABLE
+STAB	-> #
+		{ stab() }
+
+
+// DECLARATIONS
+DECLS	-> DECLS DECL
+		{ DECLS0.code = DECLS1.code||DECL2.code }
+DECLS	-> #
+DECL	-> TYPE ID ;
+		{ sym(TYPE1.addr,ID2.val) }
+TYPE	-> int
+		{ TYPE0.addr = int1.val }
+TYPE	-> float
+		{ TYPE0.addr = float1.val }
+TYPE	-> bool
+		{ TYPE0.addr = bool1.val }
+
+
+// STATEMENTS
+STMTS	-> STMTS LABEL STMT
+		{ backpatch(STMTS1.nextlb,LABEL2.addr) }
+		{ STMTS0.nextlb = STMT3.nextlb }
+		{ STMTS0.code = STMTS1.code||LABEL2.code||STMT3.code }
+STMTS	-> #
+STMT	-> EXPR
+		{ STMT0.code = EXPR1.code }
+STMT	-> ID = EXPR ;
+		{ STMT0.nextlb = instr() }
+		{ STMT0.code = EXPR3.code||quad(=,EXPR3.addr,,ID1.val) }
+STMT	-> if ( EXPR ) LABEL STMT
+		{ backpatch(EXPR3.truelb,LABEL5.addr) }
+		{ STMT0.nextlb = merge(EXPR3.falselb,SMTM6.nextlb) }
+		{ STMT0.code = EXPR3.code||LABEL5.code||STMT6.code }
+STMT	-> if ( EXPR ) LABEL STMT END else LABEL STMT
+		{ backpatch(EXPR3.truelb,LABEL5.addr) }
+		{ backpatch(EXPR3.falselb,LABEL9.addr) }
+		{ STMT0.nextlb = merge(STMT6.nextlb,END7.nextlb,STMT10.nextlb) }
+		{ STMT0.code = EXPR3.code||LABEL5.code||STMT6.code||END7.code||LABEL9.code||STMT10.code }
+STMT	-> while LABEL ( EXPR ) LABEL STMT
+		{ backpatch(STMT7.nextlb,LABEL2.addr) }
+		{ backpatch(EXPR4.truelb,LABEL6.addr) }
+		{ STMT0.nextlb = EXPR4.falselb }
+		{ STMT0.code = LABEL2.code||EXPR4.code||LABEL6.code||STMT7.code||quad(goto,,,LABEL2.addr) }
+STMT	-> BLOCK
+		{ STMT0.truelb = BLOCK1.truelb }
+		{ STMT0.falselb = BLOCK1.falselb }
+		{ STMT0.nextlb = BLOCK1.nextlb }
+		{ STMT0.code = BLOCK1.code }
+
+// LABEL
+LABEL	-> #
+		{ LABEL0.addr = label() }
+		{ LABEL0.code = quad(label,,,LABEL0.addr) }
+
+// END LABEL
+END		-> #
+		{ END0.nextlb = instr() }
+		{ END0.code = quad(goto,,,END0.nextlb) }
+
+
+// EXPRESSION
+// LOGIC EXPRESSION ( || && == != )
+EXPR	-> EXPR || LABEL JOIN
+		{ backpatch(EXPR1.falselb,LABEL3.addr) }
+		{ EXPR0.truelb = merge(EXPR1.truelb,JOIN4.truelb) }
+		{ EXPR0.falselb = JOIN4.falselb }
+		{ EXPR0.code = EXPR1.code||LABEL3.code||JOIN4.code }
+EXPR	-> JOIN
+		{ EXPR0.addr = JOIN1.addr }
+		{ EXPR0.truelb = JOIN1.truelb }
+		{ EXPR0.falselb = JOIN1.falselb }
+		{ EXPR0.code = JOIN1.code }
+
+JOIN	-> JOIN && LABEL EQUA
+		{ backpatch(JOIN1.truelb,LABEL3.addr) }
+		{ JOIN0.truelb = EQUA4.truelb }
+		{ JOIN0.falselb = merge(JOIN1.falselb,EQUA4.falselb) }
+		{ JOIN0.code = JOIN1.code||LABEL3.code||EQUA4.code }
+JOIN	-> EQUA
+		{ JOIN0.addr = EQUA1.addr }
+		{ JOIN0.truelb = EQUA1.truelb }
+		{ JOIN0.falselb = EQUA1.falselb }
+		{ JOIN0.code = EQUA1.code }
+
+EQUA	-> EQUA == REL
+		{ EQUA0.truelb = instr() }
+		{ EQUA0.falselb = instr() }
+		{ EQUA0.code = EQUA1.code||REL3.code||quad(==,EQUA1.addr,REL3.addr,EQUA0.truelb)||quad(goto,,,EQUA0.falselb) }
+EQUA	-> EQUA != REL
+		{ EQUA0.truelb = instr() }
+		{ EQUA0.falselb = instr() }
+		{ EQUA0.code = EQUA1.code||REL3.code||quad(==,EQUA1.addr,REL3.addr,EQUA0.truelb)||quad(goto,,,EQUA0.falselb) }
+EQUA	-> REL
+		{ EQUA0.addr = REL1.addr }
+		{ EQUA0.truelb = REL1.truelb }
+		{ EQUA0.falselb = REL1.falselb }
+		{ EQUA0.code = REL1.code }
+
+// RELATION EXPRESSION ( < > <= >= )
+REL		-> ARIT < ARIT
+		{ REL0.truelb = instr() }
+		{ REL0.falselb = instr() }
+		{ REL0.code = ARIT1.code||ARIT3.code||quad(<,ARIT1.addr,ARIT3.addr,REL0.truelb)||quad(goto,,,REL0.falselb) }
+REL		-> ARIT > ARIT
+		{ REL0.truelb = instr() }
+		{ REL0.falselb = instr() }
+		{ REL0.code = ARIT1.code||ARIT3.code||quad(>,ARIT1.addr,ARIT3.addr,REL0.truelb)||quad(goto,,,REL0.falselb) }
+REL		-> ARIT <= ARIT
+		{ REL0.truelb = instr() }
+		{ REL0.falselb = instr() }
+		{ REL0.code = ARIT1.code||ARIT3.code||quad(<=,ARIT1.addr,ARIT3.addr,REL0.truelb)||quad(goto,,,REL0.falselb) }
+REL		-> ARIT >= ARIT
+		{ REL0.truelb = instr() }
+		{ REL0.falselb = instr() }
+		{ REL0.code = ARIT1.code||ARIT3.code||quad(>=,ARIT1.addr,ARIT3.addr,REL0.truelb)||quad(goto,,,REL0.falselb) }
+REL		-> ARIT
+		{ REL0.addr = ARIT1.addr }
+		{ REL0.truelb = ARIT1.truelb }
+		{ REL0.falselb = ARIT1.falselb }
+		{ REL0.code = ARIT1.code }
+
+
+// ARITHMETIC EXPRESSION ( + - * / )
+ARIT	-> ARIT + TERM
+		{ ARIT0.addr = temp() }
+		{ ARIT0.code = ARIT1.code||TERM3.code||quad(+,ARIT1.addr,TERM3.addr,ARIT0.addr) }
+ARIT	-> ARIT - TERM
+		{ ARIT0.addr = temp() }
+		{ ARIT0.code = ARIT1.code||TERM3.code||quad(-,ARIT1.addr,TERM3.addr,ARIT0.addr) }
+ARIT	-> TERM
+		{ ARIT0.addr = TERM1.addr }
+		{ ARIT0.truelb = TERM1.truelb }
+		{ ARIT0.falselb = TERM1.falselb }
+		{ ARIT0.code = TERM1.code }
+
+TERM	-> TERM * UNARY
+		{ TERM0.addr = temp() }
+		{ TERM0.code = TERM1.code||UNARY3.code||quad(*,TERM1.addr,UNARY3.addr,TERM0.addr) }
+TERM	-> TERM / UNARY
+		{ TERM0.addr = temp() }
+		{ TERM0.code = TERM1.code||UNARY3.code||quad(/,TERM1.addr,UNARY3.addr,TERM0.addr) }
+TERM	-> UNARY
+		{ TERM0.addr = UNARY1.addr }
+		{ TERM0.truelb = UNARY1.truelb }
+		{ TERM0.falselb = UNARY1.falselb }
+		{ TERM0.code = UNARY1.code }
+
+// UNARY OPERATION
+UNARY	-> ! UNARY
+		{ UNARY0.truelb = UNARY2.falselb }
+		{ UNARY0.falselb = UNARY2.truelb }
+UNARY	-> - UNARY
+		{ UNARY0.addr = temp() }
+		{ UNARY0.code = UNARY2.code||quad(-,UNARY2.addr,,UNARY0.addr) }
+UNARY	-> FACTOR
+		{ UNARY0.addr = FACTOR1.addr }
+		{ UNARY0.truelb = FACTOR1.truelb }
+		{ UNARY0.falselb = FACTOR1.falselb }
+		{ UNARY0.code = FACTOR1.code }
+
+// FACTOR (highest priority)
+FACTOR	-> ( EXPR )
+		{ FACTOR0.addr = EXPR2.addr }
+		{ FACTOR0.truelb = EXPR2.truelb }
+		{ FACTOR0.falselb = EXPR2.falselb }
+		{ FACTOR0.code = EXPR2.code }
+FACTOR	-> NUM
+		{ FACTOR0.addr = NUM1.val }
+FACTOR	-> ID
+		{ FACTOR0.addr = ID1.val }
+FACTOR	-> true
+		{ FACTOR0.truelb = instr() }
+		{ FACTOR0.code = quad(goto,,,FACTOR0.truelb) }
+FACTOR	-> false
+		{ FACTOR0.falselb = instr() }
+		{ FACTOR0.code = quad(goto,,,FACTOR0.falselb) }
