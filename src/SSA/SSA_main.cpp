@@ -35,7 +35,7 @@ int main() {
         token.type = token_info[1];
         token.content = token_info[2];
         tokens.emplace_back(token);
-        cout << token << endl;
+        // cout << token << endl;
     }
     Semer semer;
     Praser praser = Praser(tokens, "../assets/CFG.txt", semer);

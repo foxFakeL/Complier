@@ -51,8 +51,8 @@ public:
     int ACTION(int state, string symbol);
 
 private:
-    // 打印项目集规范族
-    void print_collection();
+    // 打印Action表
+    void print_Action();
     // 打印状态转移表
     void print_trans();
     void print_first();
@@ -64,6 +64,8 @@ private:
     void build_collection();
     // 获得闭包项
     set<Item> get_closure(const Item& items);
+    // 获得一个Item集合的闭包项
+    set<Item> get_closure(const set<Item>& items);
     // 获得项目集经过某个符号的转移
     set<Item> get_goto(const set<Item>& items, const string& symbol);
     // 获取一个串的First集

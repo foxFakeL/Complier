@@ -42,22 +42,19 @@ Praser::Praser(const vector<Token>& tokens, string filename, Semer& semer) {
     }
 
     build_first();
-
-    cout << 1 << endl;
-
     build_collection();
-
-    cout << 2 << endl;
-
     build_action();
-
-    cout << 3 << endl;
-
     build_goto();
 
-    cout << "First集: " << endl;
-    print_first();
-    cout << endl;
+    // cout << "First集: " << endl;
+    // print_first();
+    // cout << endl;
+
+    // cout << "Trans" << endl;
+    // print_trans();
+
+    // cout << "Action\n";
+    // print_Action();
 
     stack<int> st;        // 状态栈
     stack<AST_NODE*> nt;  // 语法树节点栈
@@ -167,13 +164,26 @@ void Praser::build_first() {
 }
 
 void Praser::print_first() {
-    build_first();
+    // build_first();
     for (const auto& i : first) {
         cout << i.first << ": ";
         for (const auto& j : i.second) {
             cout << j << " ";
         }
         cout << endl;
+    }
+}
+
+void Praser::print_trans() {
+    for (const auto& i : trans) {
+        cout << i.first.first << " " << i.first.second << " " << i.second
+             << endl;
+    }
+}
+
+void Praser::print_Action() {
+    for (const auto& i : action) {
+        cout << i.first.first << " " << i.first.second << " " << i.second << endl;
     }
 }
 
@@ -197,6 +207,7 @@ set<Item> Praser::get_closure(const Item& item) {
                     Item tmp;
                     tmp.prod_id = k;
                     tmp.dot_pos = 0;
+
                     tmp.lookahead = get_first(
                         vector<string>(j.rhs.begin() + 1, j.rhs.end()));
                     if (tmp.lookahead.find("#") != tmp.lookahead.end()) {
@@ -215,6 +226,15 @@ set<Item> Praser::get_closure(const Item& item) {
     return ret;
 }
 
+set<Item> Praser::get_closure(const set<Item>& items) {
+    set<Item> ret;
+    for (const auto& item : items) {
+        auto t = get_closure(item);
+        ret.insert(t.begin(), t.end());
+    }
+    return ret;
+}
+
 set<Item> Praser::get_goto(const set<Item>& items, const string& symbol) {
     set<Item> ret;
     for (auto i : items) {
@@ -229,12 +249,7 @@ set<Item> Praser::get_goto(const set<Item>& items, const string& symbol) {
             ret.insert(tmp);
         }
     }
-    set<Item> true_ret;
-    for (const auto& i : ret) {
-        auto t = get_closure(i);
-        true_ret.insert(t.begin(), t.end());
-    }
-    return true_ret;
+    return get_closure(ret);
 }
 
 void Praser::build_collection() {
@@ -276,17 +291,36 @@ void Praser::build_action() {
 
             // 点在产生式最末 或 点后为空（规约或接受）
             if (p.rhs.size() == item.dot_pos || p.rhs[item.dot_pos] == "#") {
-                for (const auto& lookahead : item.lookahead) {
-                    if (p.lhs != START_SYM)
-                        action.insert({{item.prod_id, lookahead}, item.prod_id});
-                    else
-                        action.insert({{item.prod_id, lookahead}, ACC});
+                // for (const auto& lookahead : item.lookahead) {
+                //     if (p.lhs != START_SYM)
+                //         action.insert({{item.prod_id, lookahead}, item.prod_id});
+                //     else
+                //         action.insert({{item.prod_id, lookahead}, ACC});
+                // }
+                if (p.lhs != START_SYM) {
+                    for (const auto& lookahead : item.lookahead) {
+                        auto it = action.find({i, lookahead});
+                        if (it != action.end()) {
+                            if (it->second != item.prod_id) {
+                                cout << "conflict: " << i << " " << lookahead
+                                     << " " << it->second << " " << item.prod_id
+                                     << endl;
+                            }
+                        } else {
+                            action[{i, lookahead}] = item.prod_id;
+                        }
+                    }
+                } else {
+                    action[{i, "$"}] = ACC;
                 }
             } else if (nonterminals.find(p.rhs[item.dot_pos]) == nonterminals.end()) {  // 移入
                 string s = p.rhs[item.dot_pos];
                 pair<int, string> pair(i, s);
                 if (trans.find(pair) != trans.end()) {
-                    action[pair] = -trans[pair];
+                    auto it = action.find(pair);
+                    if (it != action.end()) {
+                        cout << "-----------------------------------------------" << endl;
+                    }
                 }
             }
         }
