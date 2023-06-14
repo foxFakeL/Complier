@@ -16,17 +16,7 @@ public:
     vector<string> attr;
     friend ostream& operator<<(ostream& os, const Production& p);
 
+    string& operator[](int) const noexcept;
+
 private:
 };
-
-class MultiProduction {
-public:
-    MultiProduction(string lhs, vector<vector<string>> rhs);
-    string lhs;
-    vector<vector<string>> rhs;
-    friend ostream& operator<<(ostream& os, const MultiProduction& p);
-};
-
-vector<Production> getProductions(string filename);
-
-vector<MultiProduction> getMultiProductions(vector<Production>& productions);

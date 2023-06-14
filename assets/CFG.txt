@@ -7,17 +7,20 @@ BLOCK	-> { STAB DECLS STMTS }
 		{ BLOCK0.code = DECLS3.code||STMTS4.code }
 
 
-// SYMBOL TABLE
+// SYMBOL TABLE 构建符号表
 STAB	-> #
 		{ stab() }
 
 
-// DECLARATIONS
+// DECLARATIONS 定义变量
 DECLS	-> DECLS DECL
 		{ DECLS0.code = DECLS1.code||DECL2.code }
 DECLS	-> #
+
+// 将变量类型和变量名加入符号表
 DECL	-> TYPE ID ;
 		{ sym(TYPE1.addr,ID2.val) }
+// 所有的数据类型
 TYPE	-> int
 		{ TYPE0.addr = int1.val }
 TYPE	-> float
@@ -28,7 +31,9 @@ TYPE	-> bool
 
 // STATEMENTS
 STMTS	-> STMTS LABEL STMT
+		// 将STMTS的下一条指令地址设为LABEL2的地址
 		{ backpatch(STMTS1.nextlb,LABEL2.addr) }
+		// 将STMTS(左部的)的下一条指令地址设为STMT3的下一条指令地址
 		{ STMTS0.nextlb = STMT3.nextlb }
 		{ STMTS0.code = STMTS1.code||LABEL2.code||STMT3.code }
 STMTS	-> #

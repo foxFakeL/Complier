@@ -1,5 +1,7 @@
 #include "Semer.h"
 
+#include <iostream>
+#include <regex>
 using namespace std;
 
 const regex r_assign("(.+) = (.+)");        // 形如 A = B
@@ -40,15 +42,15 @@ AST* Semer::get_ast() {
 /*
  *	@brief 执行一条产生式附带的语义规则
  */
-AST_NODE* Semer::execute(Production& pd, vector<string> rules, stack<AST_NODE*>& nt) {
+AST_NODE* Semer::execute(vector<string> pd, vector<string> rules, stack<AST_NODE*>& nt) {
     smatch sm;
     AST_NODE* node = new AST_NODE();
 
     // 建立由父到子节点的关联
-    node->val = pd.lhs + "0";
-    for (size_t i = pd.rhs.size() - 1; i >= 0; i--) {
-        if (pd.rhs[i] != "#") {
-            string name = pd.rhs[i] + to_string(i);
+    node->val = pd[0] + "0";
+    for (size_t i = pd.size() - 1; i > 0; i--) {
+        if (pd[i] != "#") {
+            string name = pd[i] + to_string(i);
             AST_NODE* pnode = nt.top();
             node->children.insert({name, pnode});
             nt.pop();
@@ -86,28 +88,42 @@ AST_NODE* Semer::execute(Production& pd, vector<string> rules, stack<AST_NODE*>&
 
         // 函数调用
         if (regex_match(rule, sm, r_func)) {
-            string func_name = sm.str(1);
-            string argstr = sm.str(2);
+            string func_name = sm.str(1);  // 函数名
+            string argstr = sm.str(2);     // 参数列表
 
             // 新建符号表
             if (func_name == "stab") {
-                map<string, SYM*>* sym_tab = new map<string, SYM*>();
+                map<string, list<SYM*>>* sym_tab = new map<string, list<SYM*>>();
                 this->sym_st.push(sym_tab);
             }
 
             // 创建符号表条目
             if (func_name == "sym") {
-                map<string, SYM*>* top_tab = sym_st.top();
+                auto* top_tab = sym_st.top();
                 vector<string> args = split(argstr, ",");
                 for (size_t i = 0; i < args.size(); i++) {
                     args[i] = get_attr(node, args[i]);
                 }
                 SYM* sym = new SYM{args[1]};
-                top_tab->insert({args[0], sym});
+                for (const auto& i : *top_tab) {
+                    for (const auto& j : i.second) {
+                        if (j->type == sym->type) {
+                            cout << "Redefinition Error at : " << args[1] << endl;
+                        }
+                    }
+                }
+                auto it = top_tab->find(args[0]);
+                if (it == top_tab->end()) {
+                    top_tab->insert({args[0], {sym}});
+                } else {
+                    it->second.push_back(sym);
+                }
             }
 
             // 删除符号表
             if (func_name == "delstab") {
+                auto* ptr = sym_st.top();
+                delete ptr;
                 this->sym_st.pop();
             }
 
@@ -287,8 +303,8 @@ string Semer::get_attr(AST_NODE* node, string attr) {
     smatch sm;
     AST_NODE* sub;
     if (regex_search(attr, sm, r_attr)) {
-        string node_name = sm.str(1);
-        string attr_name = sm.str(2);
+        string node_name = sm.str(1);  // 节点名称
+        string attr_name = sm.str(2);  // 节点属性
         if (node_name == node->val) {
             sub = node;
         } else {

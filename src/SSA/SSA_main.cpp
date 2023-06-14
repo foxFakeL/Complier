@@ -1,8 +1,9 @@
 #include <fstream>
 #include <iostream>
 
-#include "Praser.h"
+#include "Parser.h"
 #include "Production.h"
+#include "SDD.h"
 
 using namespace std;
 
@@ -38,18 +39,19 @@ int main() {
         // cout << token << endl;
     }
     Semer semer;
-    Praser praser = Praser(tokens, "../assets/CFG.txt", semer);
+    SDD sdd("../assets/CFG.txt");
+    Parser praser = Parser(tokens, sdd, semer);
     AST* ast = semer.get_ast();
     AST_NODE* root = ast->get_root();
 
-    cout << "AST:" << endl;
+    // cout << "AST:" << endl;
 
     if (root != nullptr) {
-        ast->print(root);
-        cout << endl;
         for (const auto& quad : root->code) {
-            quad->print(semer);
+            cout << *quad << "\n";
+            // quad->print(semer);
         }
+        ast->print(root);
     }
     return 0;
 }

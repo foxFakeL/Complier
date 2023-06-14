@@ -23,6 +23,11 @@ void QUAD::print(Semer& semer) {
     }
 }
 
+ostream& operator<<(ostream& os, const QUAD& q) {
+    os << "OP: " << q.op << "\tArg1: " << q.arg1 << "\tArg2: " << q.arg2 << "\tRes: " << q.res;
+    return os;
+}
+
 void AST::set_root(AST_NODE* root) {
     this->root = root;
 }

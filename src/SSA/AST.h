@@ -15,6 +15,8 @@ struct QUAD {
     string res;
 
     void print(Semer& semer);
+
+    friend ostream& operator<<(ostream& os, const QUAD& q);
 };
 
 struct AST_NODE {
