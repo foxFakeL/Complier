@@ -6,12 +6,11 @@
 #include <vector>
 
 #include "config.h"
-using namespace std;
 
 struct ITEM {
-    size_t pid;   // 产生式编号
-    int dot;      // 点位置，以产生式体最左端为0起
-    string peek;  // 向前看符号
+    size_t pid;        // 产生式编号
+    int dot;           // 点位置，以产生式体最左端为0起
+    std::string peek;  // 向前看符号
 
     bool operator<(const ITEM& it) const noexcept {
         if (this->pid != it.pid)
@@ -34,22 +33,22 @@ struct ITEM {
  */
 class SDD {
 private:
-    set<string> vt;                            // 终结符集
-    set<string> vn;                            // 非终结符集
-    map<string, set<string>> first;            // first集
-    vector<vector<string>> prod;               // 产生式，[x][0]为产生式头
-    vector<set<ITEM>> collection;              // LR(1)项集族
-    map<pair<int, string>, int> trans;         // 项集转换函数
-    map<pair<int, string>, int> action_table;  // ACTION表
-    map<pair<int, string>, int> goto_table;    // GOTO表
-    map<int, vector<string>> rules;            // 语义规则
+    std::set<std::string> vt;                                 // 终结符集
+    std::set<std::string> vn;                                 // 非终结符集
+    std::map<std::string, std::set<std::string>> first;       // first集
+    std::vector<std::vector<std::string>> prod;               // 产生式，[x][0]为产生式头
+    std::vector<std::set<ITEM>> collection;                   // LR(1)项集族
+    std::map<std::pair<int, std::string>, int> trans;         // 项集转换函数
+    std::map<std::pair<int, std::string>, int> action_table;  // ACTION表
+    std::map<std::pair<int, std::string>, int> goto_table;    // GOTO表
+    std::map<int, std::vector<std::string>> rules;            // 语义规则
 
 public:
-    SDD(string path);
-    vector<string> get_pd(int i);
-    vector<string> get_rules(int i);
-    int ACTION(int i, string t);
-    int GOTO(int i, string n);
+    SDD(std::string path);
+    std::vector<std::string> get_pd(int i);
+    std::vector<std::string> get_rules(int i);
+    int ACTION(int i, std::string t);
+    int GOTO(int i, std::string n);
     void print();
 
 protected:
@@ -57,8 +56,8 @@ protected:
     void cal_collec();
     void cal_action();
     void cal_goto();
-    void set_rule(int i, string rule);
-    set<ITEM> closure(set<ITEM>& I);
-    set<ITEM> go_to(set<ITEM>& I, string x);
-    set<string> get_first(vector<string> v);
+    void set_rule(int i, std::string rule);
+    std::set<ITEM> closure(std::set<ITEM>& I);
+    std::set<ITEM> go_to(std::set<ITEM>& I, std::string x);
+    std::set<std::string> get_first(std::vector<std::string> v);
 };

@@ -1,0 +1,151 @@
+BEGIN -> # CO
+BEGIN -> # SY
+BEGIN -> # OP
+BEGIN -> # QU
+
+//CONSTANT
+CO		-> # INT_0
+
+//INTEGER
+INT_0	-> [0-9] INT
+INT		-> [0-9] INT
+INT		-> #
+
+//FLOAT
+INT		-> . FLOAT_0
+FLOAT_0 -> [0-9] FLOAT
+FLOAT	-> [0-9] FLOAT
+FLOAT	-> #
+
+//E-NUMBER
+INT		-> E E_NUM_0
+INT		-> e E_NUM_0
+FLOAT	-> E E_NUM_0
+FLOAT	-> e E_NUM_0
+E_NUM_0 -> + E_NUM_1
+E_NUM_0 -> - E_NUM_1
+E_NUM_0 -> # E_NUM_1
+E_NUM_1 -> [0-9] E_NUM
+E_NUM	-> [0-9] E_NUM
+E_NUM	-> #
+
+//I-NUMBER
+INT		-> I I_NUM_0
+INT		-> i I_NUM_0
+FLOAT	-> I I_NUM_0
+FLOAT	-> i I_NUM_0
+I_NUM_0	-> + I_NUM_1
+I_NUM_0	-> - I_NUM_1
+I_NUM_1	-> [0-9] I_NUM
+I_NUM	-> [0-9] I_NUM
+I_NUM	-> #
+
+//I-NUMBER-FLOAT
+I_NUM	-> . I_NUF_0
+I_NUF_0	-> [0-9] I_NUMF
+I_NUMF	-> [0-9] I_NUMF
+I_NUMF	-> #
+
+
+
+//IDENTIFIER(SYMBOL)
+SY		-> [a-z] ID_0
+SY		-> [A-Z] ID_0
+SY		-> _ ID_0
+ID_0	-> [a-z] ID
+ID_0	-> [A-Z] ID
+ID_0	-> [0-9] ID
+ID_0	-> _ ID
+ID_0	-> # ID
+ID		-> [a-z] ID
+ID		-> [A-Z] ID
+ID		-> [0-9] ID
+ID		-> _ ID
+ID		-> #
+
+
+//OPERATOR
+//ADD
+OP		-> + ADD
+ADD		-> #
+
+//SUB
+OP		-> - SUB
+SUB		-> #
+
+//MUL
+OP		-> * MUL
+MUL		-> #
+
+//DIV
+OP		-> / DIV
+DIV		-> #
+
+//GREATER THAN
+OP		-> > GT
+GT		-> #
+
+//LESS THAN
+OP		-> < LT
+LT		-> #
+
+//ASSIGNMENT
+OP		-> = ASSIGN
+ASSIGN	-> #
+
+//GREATER EQUAL
+GT		-> = GE
+GE		-> #
+
+//LESS EQUAL
+LT		-> = LE
+LE		-> #
+
+//EQUAL
+ASSIGN	-> = EQ
+EQ		-> #
+
+//NOT
+OP		-> ! NOT
+NOT		-> #
+
+//NOT EQUAL
+NOT		-> = NE
+NE		-> #
+
+//AND
+OP		-> & BAND
+BAND	-> & AND
+AND		-> #
+
+//OR
+OP		-> | BOR
+BOR		-> | OR
+OR		-> #
+
+
+//QUALIFIER
+//LEFT PARENTHESIS
+QU		-> ( LP
+LP		-> #
+
+//RIGHT PARENTHESIS
+QU		-> ) RP
+RP		-> #
+
+//LEFT BRACKET
+QU		-> { LB
+LB		-> #
+
+//RIGHT BRACKET
+QU		-> } RB
+RB		-> #
+
+//COMMA
+QU		-> , COM
+COM		-> #
+
+//SEMICOLON
+QU		-> ; SEM
+SEM		-> #
+

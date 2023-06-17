@@ -1,6 +1,13 @@
 #include "Parser.h"
 
 #include <iostream>
+
+#include "../Lex/Token.h"
+#include "AST.h"
+#include "Production.h"
+#include "SDD.h"
+#include "Semer.h"
+#include "config.h"
 using namespace std;
 
 Parser::Parser(const vector<Token>& tokens, SDD& sdd, Semer& semer) {

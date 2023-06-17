@@ -2,6 +2,8 @@
 
 #include <iostream>
 #include <regex>
+
+#include "AST.h"
 using namespace std;
 
 const regex r_assign("(.+) = (.+)");        // 形如 A = B

@@ -3,33 +3,13 @@
 #include <iostream>
 #include <string>
 
-using namespace std;
-
 struct Token {
-    int line;         // 表示在第几行
-    string type;      // 类型
-    string content;   // 它的内容是什么
-    bool isTerminal;  // 是否是终结符
+    int line;             // 表示在第几行
+    std::string type;     // 类型
+    std::string content;  // 它的内容是什么
+    bool isTerminal;      // 是否是终结符
 
-    friend ostream& operator<<(ostream& os, const Token& token) {
-        os << "<" << token.line << ", " << token.type << ", " << token.content << ">";
-        return os;
-    }
+    friend std::ostream& operator<<(std::ostream& os, const Token& token);
 
-    bool operator<(const Token& token) const {
-        if (line < token.line)
-            return true;
-        else if (line == token.line) {
-            if (type < token.type)
-                return true;
-            else if (type == token.type) {
-                if (content < token.content)
-                    return true;
-                else
-                    return false;
-            } else
-                return false;
-        } else
-            return false;
-    }
+    bool operator<(const Token& token) const;
 };

@@ -1,9 +1,12 @@
 #include <fstream>
 #include <iostream>
 
+#include "../Lex/Token.h"
+#include "AST.h"
 #include "Parser.h"
 #include "Production.h"
 #include "SDD.h"
+#include "Semer.h"
 
 using namespace std;
 
@@ -51,7 +54,7 @@ int main() {
             cout << *quad << "\n";
             // quad->print(semer);
         }
-        ast->print(root);
+        // ast->print(root);
     }
     return 0;
 }
