@@ -56,7 +56,11 @@ int main() {
         cout.rdbuf(std_cout);
         cout << "[Quadruple]" << endl;
         for (auto quad : ast->get_root()->code) {
-            quad->print(semer);
+            cout << *quad << endl;
+        }
+        cout << "******************************" << endl;
+        for (const auto& i : ast->get_root()->code) {
+            i->print(semer);
         }
     }
 

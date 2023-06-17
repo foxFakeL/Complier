@@ -1,3 +1,6 @@
+cmake_minimum_required(VERSION 3.10)
+project(Complier)
+
 # 添加 SSA 模块的子目录
 add_subdirectory(SSA)
 add_subdirectory(Lex)
