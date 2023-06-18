@@ -104,7 +104,8 @@ EQUA	-> EQUA == REL
 EQUA	-> EQUA != REL
 		{ EQUA0.truelb = instr() }
 		{ EQUA0.falselb = instr() }
-		{ EQUA0.code = EQUA1.code||REL3.code||quad(==,EQUA1.addr,REL3.addr,EQUA0.truelb)||quad(goto,,,EQUA0.falselb) }
+		# modify !!!!!!!!!!!!!!!!!!!!
+		{ EQUA0.code = EQUA1.code||REL3.code||quad(!=,EQUA1.addr,REL3.addr,EQUA0.truelb)||quad(goto,,,EQUA0.falselb) }
 EQUA	-> REL
 		{ EQUA0.addr = REL1.addr }
 		{ EQUA0.truelb = REL1.truelb }

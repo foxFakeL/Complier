@@ -63,6 +63,8 @@ Lexer::Lexer(string path, DFA* dfa) {
                         string content(lexeme_begin, forward);
                         cout << "Incorrect lexeme: " << content << endl
                              << endl;
+                        lex_res.line = line;
+                        lex_res.msg = "Incorrect lexeme: " + content;
                         break;
                     }
                 } else if (*forward == '\0')
@@ -89,6 +91,8 @@ Lexer::Lexer(string path, DFA* dfa) {
                 string content(lexeme_begin, forward);
                 cout << "Incorrect words after lexeme: " << content << endl
                      << endl;
+                lex_res.line = line;
+                lex_res.msg = "Incorrect lexeme: " + content;
                 break;
             }
         }

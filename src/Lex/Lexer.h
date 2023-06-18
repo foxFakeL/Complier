@@ -4,6 +4,13 @@
 class DFA;
 class Token;
 
+class LexError {
+public:
+    bool res;
+    int line;
+    std::string msg;
+};
+
 class Lexer {
 private:
     char* lexeme_begin = nullptr;   // 词素头
@@ -15,6 +22,7 @@ private:
     std::vector<Token*> tokens;     // token列表
 
 public:
+    LexError lex_res;
     Lexer(std::string path, DFA* dfa);
     std::vector<Token> get_tokens();
     int get_res();

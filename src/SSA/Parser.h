@@ -3,12 +3,21 @@
 #define STATE_STACK_OUT 1
 #include <set>
 #include <stack>
+#include <string>
 #include <vector>
 
 class Token;
 class AST_NODE;
 class SDD;
 class Semer;
+
+/// @brief 语法分析结果
+class SyntexRes {
+public:
+    bool res;
+    int line;
+    std::string msg;
+};
 
 /*
  * @brief 语法分析器，判断是否通过语法分析，同时将规则附带的语义传入Semer中，由Semer进行语义分析
@@ -21,9 +30,13 @@ private:
     std::stack<int> st;        // 状态栈
     std::stack<AST_NODE*> nt;  // 节点栈
     int res = 0;               // 处理结果
+    const std::vector<Token> tokens;
+    SDD& sdd;
+    Semer& semer;
 
 public:
     Parser(const std::vector<Token>& tokens, SDD& sdd, Semer& semer);
+    SyntexRes parse();
     void print();
 
 protected:

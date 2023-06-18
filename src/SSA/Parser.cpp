@@ -10,7 +10,21 @@
 #include "config.h"
 using namespace std;
 
-Parser::Parser(const vector<Token>& tokens, SDD& sdd, Semer& semer) {
+Parser::Parser(const vector<Token>& tokens, SDD& sdd, Semer& semer) : tokens(tokens), sdd(sdd), semer(semer) {
+}
+
+void Parser::print() {
+    cout << endl
+         << "[Syntax Analysis Result]" << endl;
+    if (res)
+        cout << "YES" << endl;
+    else
+        cout << "NO" << endl;
+    cout << endl;
+}
+
+SyntexRes Parser::parse() {
+    SyntexRes syntex_res;
     st.push(0);
     for (size_t i = 0; i < tokens.size();) {
         auto token = &tokens[i];
@@ -32,10 +46,10 @@ Parser::Parser(const vector<Token>& tokens, SDD& sdd, Semer& semer) {
         // 报错
         if (op == ERROR) {
             res = 0;
-            cout << "Syntax error at line: " << token->line << endl;
-            cout << "Incorrect syntax: " << token->content << endl
-                 << endl;
-            break;
+            syntex_res.res = false;
+            syntex_res.line = token->line;
+            syntex_res.msg = token->content;
+            return syntex_res;
         }
 
         // 接受
@@ -78,14 +92,6 @@ Parser::Parser(const vector<Token>& tokens, SDD& sdd, Semer& semer) {
                 cout << "reduce " << op << " -> " << pd[0] << endl;
         }
     }
-}
-
-void Parser::print() {
-    cout << endl
-         << "[Syntax Analysis Result]" << endl;
-    if (res)
-        cout << "YES" << endl;
-    else
-        cout << "NO" << endl;
-    cout << endl;
+    syntex_res.res = true;
+    return syntex_res;
 }

@@ -4,6 +4,7 @@ project(Complier)
 # 添加 SSA 模块的子目录
 add_subdirectory(SSA)
 add_subdirectory(Lex)
+add_subdirectory(VM)
 
 # 添加可执行文件
 add_executable(Complier main.cpp)
@@ -20,3 +21,4 @@ configure_file(../assets/code.txt ${OUTPUT_PATH}/assets/code.txt COPYONLY)
 # 链接可执行文件和 SSA 模块的库文件
 target_link_libraries(Complier SSA)
 target_link_libraries(Complier Lex)
+target_link_libraries(Complier VM)
