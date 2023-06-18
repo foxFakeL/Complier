@@ -127,7 +127,7 @@ void handle(string op, string arg1, string arg2, string res) {
     }
 }
 
-void VirtualMation(vector<QUAD*> quad, Semer& semer) {
+void VirtualMachine(vector<QUAD*> quad, Semer& semer) {
     int cur_index = 0;
     while (cur_index < quad.size()) {
         QUAD* q = quad[cur_index];  // 取出当前四元式执行相应的操作

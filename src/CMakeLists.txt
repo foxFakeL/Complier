@@ -5,6 +5,7 @@ project(Complier)
 add_subdirectory(SSA)
 add_subdirectory(Lex)
 add_subdirectory(VM)
+add_subdirectory(Opt)
 
 # 添加可执行文件
 add_executable(Complier main.cpp)
@@ -22,3 +23,4 @@ configure_file(../assets/code.txt ${OUTPUT_PATH}/assets/code.txt COPYONLY)
 target_link_libraries(Complier SSA)
 target_link_libraries(Complier Lex)
 target_link_libraries(Complier VM)
+target_link_libraries(Complier Opt)

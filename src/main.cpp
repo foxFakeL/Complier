@@ -5,6 +5,7 @@
 #include "Lex/Lexer.h"
 #include "Lex/NFA.h"
 #include "Lex/Token.h"
+#include "Opt/optimize.h"
 #include "SSA/AST.h"
 #include "SSA/Parser.h"
 #include "SSA/SDD.h"
@@ -84,15 +85,14 @@ int main(int arg, char** args) {
     }
     ast_ofile.close();
     cout.rdbuf(std_cout);
-    VirtualMation(ast->get_root()->code, semer);
 
-    // cout.rdbuf(std_cout);
-    // string s;
-    // cin >> s;
-    // if (isDegital(s)) {
-    //     cout << "aaaaaaaaaaaaaaaaaaaaaa\n";
-    // } else {
-    //     cout << "bbbbbbbbbbbbbbbbbbbbbbbbbb\n";
-    // }
-    // return 0;
+    optimize(ast->get_root()->code, semer);
+    if (QUAD_OUT) {
+        cout << "[Optimized Quadruple]" << endl;
+        for (const auto& i : ast->get_root()->code) {
+            i->print(semer);
+        }
+    }
+
+    VirtualMachine(ast->get_root()->code, semer);
 }
