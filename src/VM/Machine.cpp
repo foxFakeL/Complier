@@ -164,4 +164,9 @@ void VirtualMation(vector<QUAD*> quad, Semer& semer) {
             }
         }
     }
+    cout << "=========================\n";
+    for (const auto& p : key_val) {
+        cout << p.first << " : " << p.second << endl;
+    }
+    cout << "==========================\n";
 }
